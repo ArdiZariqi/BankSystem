@@ -2,6 +2,8 @@ package com.banksystem.bankapp.service.implementations;
 
 import com.banksystem.bankapp.daos.AccountRepository;
 import com.banksystem.bankapp.entities.Account;
+import com.banksystem.bankapp.entities.Bank;
+import com.banksystem.bankapp.enums.TransactionFeeType;
 import com.banksystem.bankapp.exception.CustomException;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,11 +54,27 @@ public class AccountService implements IAccountService {
     public Account withdraw(Integer accountId, BigDecimal amount) {
         Account account = getById(accountId);
         if (account != null) {
+            Bank bank = account.getBank();
+            BigDecimal fee = calculateFee(amount, bank);
+            BigDecimal totalAmount = amount.add(fee);
+
+            if (account.getBalance().compareTo(totalAmount) < 0) {
+                throw new CustomException("Insufficient funds in the account. Balance must cover the withdrawal amount plus the fee.");
+            }
+
             account.withdrawMoney(amount);
             return accountRepository.save(account);
         } else {
             throw new CustomException("Account not found.");
         }
+    }
+
+    private BigDecimal calculateFee(BigDecimal amount, Bank bank) {
+        BigDecimal feeValue = bank.getTransactionFeeValue();
+        if (bank.getTransactionFeeType().equals(TransactionFeeType.PERCENTAGE)) {
+            feeValue = amount.multiply(bank.getTransactionFeeValue());
+        }
+        return feeValue;
     }
 
     @Override

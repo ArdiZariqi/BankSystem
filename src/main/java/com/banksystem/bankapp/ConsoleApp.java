@@ -110,19 +110,37 @@ public class ConsoleApp implements CommandLineRunner {
     private void createAccount(Scanner scanner) {
         System.out.println("Enter account user name:");
         String userName = scanner.nextLine();
+
+        // Fetch and display all banks
+        List<Bank> banks = iBankService.getAll();
+        if (banks.isEmpty()) {
+            System.out.println("No banks available. Cannot create an account.");
+            return;
+        }
+
+        System.out.println("Available Banks:");
+        for (Bank bank : banks) {
+            System.out.println("ID: " + bank.getId() + ", Name: " + bank.getName());
+        }
+
         System.out.println("Enter bank id:");
         Integer bankId = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
 
-        Bank bank = iBankService.getById(bankId);
-        if (bank == null) {
-            System.out.println("Bank not found.");
+        Bank selectedBank = banks.stream()
+                .filter(bank -> bank.getId().equals(bankId))
+                .findFirst()
+                .orElse(null);
+
+        if (selectedBank == null) {
+            System.out.println("Invalid bank ID. Please choose a valid bank.");
             return;
         }
 
         Account account = new Account();
         account.setUserName(userName);
         account.setBalance(BigDecimal.ZERO);
-        account.setBank(bank);
+        account.setBank(selectedBank);
         iAccountService.save(account);
 
         System.out.println("Account created.");
@@ -169,19 +187,16 @@ public class ConsoleApp implements CommandLineRunner {
         System.out.println("Enter amount:");
         BigDecimal amount = scanner.nextBigDecimal();
 
-        if (account.getBalance().compareTo(amount) < 0) {
-            System.out.println("Insufficient funds.");
-            return;
+        try {
+            account = iAccountService.withdraw(accountId, amount);
+
+            Transaction transaction = new Transaction(amount.negate(), account, account, "Withdrawal", BigDecimal.ZERO);
+            iTransactionService.save(transaction);
+
+            System.out.println("Withdrawal completed.");
+        } catch (CustomException e) {
+            System.out.println(e.getMessage());
         }
-
-        account.withdrawMoney(amount);
-        iAccountService.save(account);
-
-        Transaction transaction = new Transaction(amount.negate(), account, account, "Withdrawal", BigDecimal.ZERO);
-
-        iTransactionService.save(transaction);
-
-        System.out.println("Withdrawal completed.");
     }
 
     private void deposit(Scanner scanner) {
