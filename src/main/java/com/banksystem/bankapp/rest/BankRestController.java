@@ -3,7 +3,6 @@ package com.banksystem.bankapp.rest;
 import com.banksystem.bankapp.entities.Bank;
 import com.banksystem.bankapp.service.interfaces.IBankService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,33 +20,26 @@ public class BankRestController {
     }
 
     @PostMapping
-    public ResponseEntity<Bank> addBank(@RequestBody Bank bank) {
-        var savedBank = iBankService.save(bank);
-        return new ResponseEntity<>(savedBank, HttpStatus.OK);
-
+    public ResponseEntity<Bank> createBank(@RequestBody Bank Bank) {
+        Bank createdBank = iBankService.save(Bank);
+        return ResponseEntity.ok(createdBank);
     }
 
     @GetMapping("/{id}")
-    public Bank getById(@PathVariable Integer id) {
-        Bank bank = iBankService.getById(id);
-        if(bank == null){
-            throw new RuntimeException("Bank not found for id: " + id);
-        }
-        return bank;
+    public ResponseEntity<Bank> getBankById(@PathVariable Integer id) {
+        Bank Bank = iBankService.getById(id);
+        return Bank != null ? ResponseEntity.ok(Bank) : ResponseEntity.notFound().build();
     }
 
     @GetMapping
-    public List<Bank> getAll() {
-        return iBankService.getAll();
+    public ResponseEntity<List<Bank>> getAllBanks() {
+        List<Bank> Banks = iBankService.getAll();
+        return ResponseEntity.ok(Banks);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteById(@PathVariable Integer id) {
-        Bank bank = iBankService.getById(id);
-        if(bank == null){
-            throw new RuntimeException("Bank not found for id: " + id);
-        }
+    public ResponseEntity<Void> deleteBank(@PathVariable Integer id) {
         iBankService.delete(id);
-        return "Deleted bank with id - " + id;
+        return ResponseEntity.noContent().build();
     }
 }

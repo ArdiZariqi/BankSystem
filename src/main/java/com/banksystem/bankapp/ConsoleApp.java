@@ -4,6 +4,7 @@ import com.banksystem.bankapp.entities.Bank;
 import com.banksystem.bankapp.entities.Account;
 import com.banksystem.bankapp.entities.Transaction;
 import com.banksystem.bankapp.enums.TransactionFeeType;
+import com.banksystem.bankapp.exception.CostumException;
 import com.banksystem.bankapp.service.interfaces.IBankService;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
 import com.banksystem.bankapp.service.interfaces.ITransactionService;
@@ -26,6 +27,8 @@ public class ConsoleApp implements CommandLineRunner {
 
     @Autowired
     private ITransactionService iTransactionService;
+    @Autowired
+    private IAccountService accountService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -89,7 +92,7 @@ public class ConsoleApp implements CommandLineRunner {
         try {
             feeType = TransactionFeeType.valueOf(scanner.nextLine().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid fee type provided.");
+            throw new CostumException("Invalid fee type provided.");
         }
 
         System.out.println("Enter fee amount:");
@@ -180,9 +183,19 @@ public class ConsoleApp implements CommandLineRunner {
             return;
         }
 
-        iAccountService.withdraw(accountId, amount);
 
         Transaction transaction = new Transaction(amount.negate(), account, account, "Withdrawal", BigDecimal.ZERO);
+
+        // Withdraw money and update the account balance
+        if (account.getBalance().compareTo(amount) < 0) {
+            System.out.println("Insufficient funds.");
+            return;
+        }
+
+        account.withdrawMoney(amount);
+        iAccountService.save(account);
+
+        // Save the withdrawal transaction
         iTransactionService.save(transaction);
 
         System.out.println("Withdrawal completed.");
@@ -200,9 +213,11 @@ public class ConsoleApp implements CommandLineRunner {
             return;
         }
 
+        // Deposit money and update the account balance
         iAccountService.depositMoney(accountId, amount);
 
-        Transaction transaction = new Transaction(amount, account, account, "DEPOSIT", BigDecimal.ZERO);
+        // Create a transaction for the deposit
+        Transaction transaction = new Transaction(amount, null, account, "Deposit", BigDecimal.ZERO);
         iTransactionService.save(transaction);
 
         System.out.println("Deposit completed.");

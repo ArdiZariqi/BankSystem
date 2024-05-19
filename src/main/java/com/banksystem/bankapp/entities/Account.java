@@ -1,6 +1,8 @@
 package com.banksystem.bankapp.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,12 +29,12 @@ public class Account {
     private Bank bank;
 
     @OneToMany(mappedBy = "originatingAccount")
+    @JsonManagedReference
     private List<Transaction> outgoingTransactions = new ArrayList<>();
 
     @OneToMany(mappedBy = "resultingAccount")
+    @JsonManagedReference
     private List<Transaction> incomingTransactions = new ArrayList<>();
-
-    // Constructors, Getters, and Setters
 
     public Account() {
     }
@@ -42,6 +44,38 @@ public class Account {
         this.balance = balance;
     }
 
+    public void addOutgoingTransaction(Transaction transaction) {
+        outgoingTransactions.add(transaction);
+        transaction.setOriginatingAccount(this);
+    }
+
+    public void addIncomingTransaction(Transaction transaction) {
+        incomingTransactions.add(transaction);
+        transaction.setResultingAccount(this);
+    }
+
+    public boolean withdrawMoney(BigDecimal amount) {
+        if (balance.compareTo(amount) >= 0) {
+            balance = balance.subtract(amount);
+            return true;
+        } else {
+            throw new IllegalArgumentException("Insufficient funds in the account.");
+        }
+    }
+
+    public void deposit(BigDecimal amount) {
+        balance = balance.add(amount);
+    }
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", userName='" + userName + '\'' +
+                ", balance=" + balance +
+                '}';
+    }
+
+    // Getters and setters
     public Integer getId() {
         return id;
     }
@@ -88,37 +122,5 @@ public class Account {
 
     public void setIncomingTransactions(List<Transaction> incomingTransactions) {
         this.incomingTransactions = incomingTransactions;
-    }
-
-    public void addOutgoingTransaction(Transaction transaction) {
-        outgoingTransactions.add(transaction);
-        transaction.setOriginatingAccount(this);
-    }
-
-    public void addIncomingTransaction(Transaction transaction) {
-        incomingTransactions.add(transaction);
-        transaction.setResultingAccount(this);
-    }
-
-    public boolean withdrawMoney(BigDecimal amount) {
-        if (balance.compareTo(amount) >= 0) {
-            balance = balance.subtract(amount);
-            return true;
-        } else {
-            throw new IllegalArgumentException("Insufficient funds in the account.");
-        }
-    }
-
-    public void deposit(BigDecimal amount) {
-        balance = balance.add(amount);
-    }
-
-    @Override
-    public String toString() {
-        return "Account{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
-                ", balance=" + balance +
-                '}';
     }
 }

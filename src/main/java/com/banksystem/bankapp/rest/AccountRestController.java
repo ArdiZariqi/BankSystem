@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -21,42 +20,26 @@ public class AccountRestController {
     }
 
     @PostMapping
-    public Account addAccount(@RequestBody Account account) {
-        return iAccountService.save(account);
+    public ResponseEntity<Account> createAccount(@RequestBody Account Account) {
+        Account createdAccount = iAccountService.save(Account);
+        return ResponseEntity.ok(createdAccount);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Account> getById(@PathVariable Integer id) {
-        Account account = iAccountService.getById(id);
-        return account != null ? ResponseEntity.ok(account) : ResponseEntity.notFound().build();
+    public ResponseEntity<Account> getAccountById(@PathVariable Integer id) {
+        Account Account = iAccountService.getById(id);
+        return Account != null ? ResponseEntity.ok(Account) : ResponseEntity.notFound().build();
     }
 
     @GetMapping
-    public List<Account> getAll() {
-        return iAccountService.getAll();
+    public ResponseEntity<List<Account>> getAllAccounts() {
+        List<Account> Accounts = iAccountService.getAll();
+        return ResponseEntity.ok(Accounts);
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Integer id) {
-        Account account = iAccountService.getById(id);
-        if (account == null) {
-            throw new RuntimeException("Account not found for id - " + id);
-        }
+    public ResponseEntity<Void> deleteAccount(@PathVariable Integer id) {
         iAccountService.delete(id);
-        return "Deleted Account with id - " + id;
-    }
-
-    @PostMapping("/withdraw")
-    public Account withdraw(@RequestParam Integer accountId, @RequestParam BigDecimal amount) {
-        Account account = iAccountService.getById(accountId);
-        if (account == null) {
-            throw new RuntimeException("Account not found for id - " + accountId);
-        }
-        return iAccountService.withdraw(accountId, amount);
-    }
-
-    @PostMapping("/deposit")
-    public Account deposit(@RequestParam Integer accountId, @RequestParam BigDecimal amount) {
-        return iAccountService.depositMoney(accountId, amount);
+        return ResponseEntity.noContent().build();
     }
 }

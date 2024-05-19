@@ -1,5 +1,6 @@
 package com.banksystem.bankapp.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -17,10 +18,12 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "originating_account_id")
+    @JsonBackReference
     private Account originatingAccount;
 
     @ManyToOne
     @JoinColumn(name = "resulting_account_id")
+    @JsonBackReference
     private Account resultingAccount;
 
     @Column(name = "reason")
@@ -33,12 +36,12 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(BigDecimal amount, Account resultingAccount, String reason, BigDecimal fee) {
+    public Transaction(BigDecimal amount, Account resultingAccount, String reason) {
         this.amount = amount;
         this.resultingAccount = resultingAccount;
         this.reason = reason;
-        this.fee = fee;
     }
+
     public Transaction(BigDecimal amount, Account originatingAccount, Account resultingAccount, String reason, BigDecimal fee) {
         this.amount = amount;
         this.originatingAccount = originatingAccount;

@@ -25,10 +25,10 @@ public class Bank {
     private BigDecimal transactionFeeValue;
 
     @Column(name = "total_transaction_fee_amount", columnDefinition = "DECIMAL(20, 2) DEFAULT 0.00")
-    private BigDecimal totalTransactionFeeAmount;
+    private BigDecimal totalTransactionFeeAmount = BigDecimal.ZERO;
 
     @Column(name = "total_transfer_amount", columnDefinition = "DECIMAL(20, 2) DEFAULT 0.00")
-    private BigDecimal totalTransferAmount;
+    private BigDecimal totalTransferAmount = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "bank", fetch = FetchType.EAGER)
     @JsonManagedReference
