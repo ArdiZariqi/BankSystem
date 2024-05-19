@@ -4,7 +4,7 @@ import com.banksystem.bankapp.entities.Bank;
 import com.banksystem.bankapp.entities.Account;
 import com.banksystem.bankapp.entities.Transaction;
 import com.banksystem.bankapp.enums.TransactionFeeType;
-import com.banksystem.bankapp.exception.CostumException;
+import com.banksystem.bankapp.exception.CustomException;
 import com.banksystem.bankapp.service.interfaces.IBankService;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
 import com.banksystem.bankapp.service.interfaces.ITransactionService;
@@ -86,13 +86,13 @@ public class ConsoleApp implements CommandLineRunner {
     private void createBank(Scanner scanner) {
         System.out.println("Enter bank name:");
         String name = scanner.nextLine();
-        System.out.println("Enter fee type (PERCENTAGE or FLAT VALUE): ");
+        System.out.println("Enter fee type (PERCENTAGE or FLATVALUE): ");
         TransactionFeeType feeType;
 
         try {
             feeType = TransactionFeeType.valueOf(scanner.nextLine().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new CostumException("Invalid fee type provided.");
+            throw new CustomException("Invalid fee type provided.");
         }
 
         System.out.println("Enter fee amount:");
@@ -121,7 +121,7 @@ public class ConsoleApp implements CommandLineRunner {
 
         Account account = new Account();
         account.setUserName(userName);
-        account.setBalance(BigDecimal.ZERO);  // Set initial balance to 0
+        account.setBalance(BigDecimal.ZERO);
         account.setBank(bank);
         iAccountService.save(account);
 
@@ -133,11 +133,6 @@ public class ConsoleApp implements CommandLineRunner {
         Integer originatingAccountId = scanner.nextInt();
         System.out.println("Enter resulting account id:");
         Integer resultingAccountId = scanner.nextInt();
-        System.out.println("Enter amount:");
-        BigDecimal amount = scanner.nextBigDecimal();
-        scanner.nextLine();
-        System.out.println("Enter reason:");
-        String reason = scanner.nextLine();
 
         Account originatingAccount = iAccountService.getById(originatingAccountId);
         Account resultingAccount = iAccountService.getById(resultingAccountId);
@@ -147,26 +142,15 @@ public class ConsoleApp implements CommandLineRunner {
             return;
         }
 
+        System.out.println("Enter amount:");
+        BigDecimal amount = scanner.nextBigDecimal();
+        scanner.nextLine();
+        System.out.println("Enter reason:");
+        String reason = scanner.nextLine();
+
         Transaction transaction = new Transaction(amount, originatingAccount, resultingAccount, reason, BigDecimal.ZERO);
 
-        BigDecimal fee = iTransactionService.calculateFee(transaction);
-        transaction.setFee(fee);
-        BigDecimal totalAmount = transaction.getAmount().add(fee);
-
-        // Perform the transaction
         iTransactionService.save(transaction);
-
-        // Update the bank's total transaction fee amount and total transfer amount
-        Bank originatingBank = originatingAccount.getBank();
-        originatingBank.setTotalTransactionFeeAmount(
-                originatingBank.getTotalTransactionFeeAmount().add(fee)
-        );
-        originatingBank.setTotalTransferAmount(
-                originatingBank.getTotalTransferAmount().add(transaction.getAmount())
-        );
-
-        // Save the bank's updated totals
-        iBankService.save(originatingBank);
 
         System.out.println("Transaction completed.");
     }
@@ -174,19 +158,17 @@ public class ConsoleApp implements CommandLineRunner {
     private void withdraw(Scanner scanner) {
         System.out.println("Enter account id:");
         Integer accountId = scanner.nextInt();
-        System.out.println("Enter amount:");
-        BigDecimal amount = scanner.nextBigDecimal();
 
         Account account = iAccountService.getById(accountId);
+
         if (account == null) {
             System.out.println("Account not found.");
             return;
         }
 
+        System.out.println("Enter amount:");
+        BigDecimal amount = scanner.nextBigDecimal();
 
-        Transaction transaction = new Transaction(amount.negate(), account, account, "Withdrawal", BigDecimal.ZERO);
-
-        // Withdraw money and update the account balance
         if (account.getBalance().compareTo(amount) < 0) {
             System.out.println("Insufficient funds.");
             return;
@@ -195,7 +177,8 @@ public class ConsoleApp implements CommandLineRunner {
         account.withdrawMoney(amount);
         iAccountService.save(account);
 
-        // Save the withdrawal transaction
+        Transaction transaction = new Transaction(amount.negate(), account, account, "Withdrawal", BigDecimal.ZERO);
+
         iTransactionService.save(transaction);
 
         System.out.println("Withdrawal completed.");
@@ -204,19 +187,20 @@ public class ConsoleApp implements CommandLineRunner {
     private void deposit(Scanner scanner) {
         System.out.println("Enter account id:");
         Integer accountId = scanner.nextInt();
-        System.out.println("Enter amount:");
-        BigDecimal amount = scanner.nextBigDecimal();
 
         Account account = iAccountService.getById(accountId);
+
         if (account == null) {
             System.out.println("Account not found.");
             return;
         }
 
-        // Deposit money and update the account balance
+        System.out.println("Enter amount:");
+        BigDecimal amount = scanner.nextBigDecimal();
+
+
         iAccountService.depositMoney(accountId, amount);
 
-        // Create a transaction for the deposit
         Transaction transaction = new Transaction(amount, null, account, "Deposit", BigDecimal.ZERO);
         iTransactionService.save(transaction);
 

@@ -11,8 +11,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CostumException.class)
-    public ResponseEntity<String> handleInsufficientFundsException(CostumException ex) {
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<String> handleInsufficientFundsException(CustomException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

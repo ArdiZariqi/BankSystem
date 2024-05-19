@@ -2,7 +2,7 @@ package com.banksystem.bankapp.service.implementations;
 
 import com.banksystem.bankapp.daos.AccountRepository;
 import com.banksystem.bankapp.entities.Account;
-import com.banksystem.bankapp.exception.CostumException;
+import com.banksystem.bankapp.exception.CustomException;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class AccountService implements IAccountService {
         if (result.isPresent()) {
             theAccount = result.get();
         } else {
-            throw new CostumException("Account with ID " + id + " not found");
+            throw new CustomException("Account with ID " + id + " not found");
         }
         return theAccount;
     }
@@ -55,7 +55,7 @@ public class AccountService implements IAccountService {
             account.withdrawMoney(amount);
             return accountRepository.save(account);
         } else {
-            throw new CostumException("Account not found.");
+            throw new CustomException("Account not found.");
         }
     }
 
@@ -66,7 +66,7 @@ public class AccountService implements IAccountService {
             account.deposit(amount);
             return accountRepository.save(account);
         } else {
-            throw new CostumException("Account not found.");
+            throw new CustomException("Account not found.");
         }
     }
 }
