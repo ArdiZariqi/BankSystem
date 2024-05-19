@@ -58,8 +58,6 @@ public class TransactionService implements ITransactionService {
             accountService.save(resultingAccount);
         }
 
-        transaction.setFee(fee);
-
         bank.setTotalTransferAmount(bank.getTotalTransferAmount().add(transaction.getAmount()));
         bank.setTotalTransactionFeeAmount(bank.getTotalTransactionFeeAmount().add(fee));
         bankService.save(bank);
