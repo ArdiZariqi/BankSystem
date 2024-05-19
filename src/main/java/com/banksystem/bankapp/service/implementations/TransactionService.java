@@ -5,40 +5,64 @@ import com.banksystem.bankapp.entities.Account;
 import com.banksystem.bankapp.entities.Bank;
 import com.banksystem.bankapp.entities.Transaction;
 import com.banksystem.bankapp.enums.TransactionFeeType;
+import com.banksystem.bankapp.exception.CostumException;
+import com.banksystem.bankapp.service.interfaces.IAccountService;
+import com.banksystem.bankapp.service.interfaces.IBankService;
 import com.banksystem.bankapp.service.interfaces.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransactionService implements ITransactionService {
 
     private TransactionRepository transactionRepository;
+    private IAccountService accountService;
+    private IBankService bankService;
 
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository, IAccountService accountService, IBankService bankService) {
         this.transactionRepository = transactionRepository;
+        this.accountService = accountService;
+        this.bankService = bankService;
     }
 
     @Override
     public Transaction save(Transaction transaction) {
-
-        BigDecimal fee = calculateFee(transaction);
-        transaction.setFee(fee);
-        BigDecimal totalAmount = transaction.getAmount().add(fee);
+        BigDecimal fee;
 
         Account originatingAccount = transaction.getOriginatingAccount();
         Account resultingAccount = transaction.getResultingAccount();
+        Bank bank = resultingAccount.getBank();
 
-        originatingAccount.withdrawMoney(totalAmount);
+        if (originatingAccount == null) {
+            fee = BigDecimal.ZERO;
+            resultingAccount.deposit(transaction.getAmount());
+            accountService.save(resultingAccount);
+        } else {
+            fee = calculateFee(transaction);
+            transaction.setFee(fee);
+            BigDecimal totalAmount = transaction.getAmount().add(fee);
 
-        resultingAccount.deposit(transaction.getAmount());
+            if (originatingAccount.getBalance().compareTo(totalAmount) < 0) {
+                throw new CostumException("Insufficient funds in the originating account.");
+            }
 
-        Bank bank = originatingAccount.getBank();
-        bank.setTotalTransactionFeeAmount(fee);
-        bank.setTotalTransferAmount(transaction.getAmount());
+            originatingAccount.withdrawMoney(totalAmount);
+            resultingAccount.deposit(transaction.getAmount());
+
+            accountService.save(originatingAccount);
+            accountService.save(resultingAccount);
+        }
+
+        transaction.setFee(fee);
+
+        bank.setTotalTransferAmount(bank.getTotalTransferAmount().add(transaction.getAmount()));
+        bank.setTotalTransactionFeeAmount(bank.getTotalTransactionFeeAmount().add(fee));
+        bankService.save(bank);
 
         return transactionRepository.save(transaction);
     }
@@ -48,8 +72,7 @@ public class TransactionService implements ITransactionService {
         Bank bank = transaction.getOriginatingAccount().getBank();
         BigDecimal feeValue = bank.getTransactionFeeValue();
 
-        if (bank.getTransactionFeeType().equals(TransactionFeeType.PERCENTAGE))
-        {
+        if (bank.getTransactionFeeType().equals(TransactionFeeType.PERCENTAGE)) {
             feeValue = transaction.getAmount().multiply(bank.getTransactionFeeValue());
         }
 
@@ -58,7 +81,14 @@ public class TransactionService implements ITransactionService {
 
     @Override
     public Transaction getById(Integer id) {
-        return transactionRepository.findById(id).orElse(null);
+        Optional<Transaction> result = transactionRepository.findById(id);
+        Transaction theTransaction = null;
+        if (result.isPresent()) {
+            theTransaction = result.get();
+        } else {
+            throw new CostumException("Transaction with ID " + id + " not found");
+        }
+        return theTransaction;
     }
 
     @Override

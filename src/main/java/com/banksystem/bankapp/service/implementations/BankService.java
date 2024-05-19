@@ -2,6 +2,7 @@ package com.banksystem.bankapp.service.implementations;
 
 import com.banksystem.bankapp.daos.BankRepository;
 import com.banksystem.bankapp.entities.Bank;
+import com.banksystem.bankapp.exception.CostumException;
 import com.banksystem.bankapp.service.interfaces.IBankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class BankService implements IBankService {
         if (result.isPresent()) {
             theBank = result.get();
         } else {
-            throw new RuntimeException("Bank with ID " + id + " not found");
+            throw new CostumException("Bank with ID " + id + " not found");
         }
         return theBank;
     }
