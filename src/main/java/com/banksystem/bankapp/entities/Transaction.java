@@ -18,12 +18,12 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "originating_account_id")
-    @JsonBackReference
+    @JsonBackReference(value = "originatingAccount-transactions")
     private Account originatingAccount;
 
     @ManyToOne
     @JoinColumn(name = "resulting_account_id")
-    @JsonBackReference
+    @JsonBackReference(value = "resultingAccount-transactions")
     private Account resultingAccount;
 
     @Column(name = "reason")

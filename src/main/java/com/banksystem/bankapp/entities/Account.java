@@ -1,7 +1,6 @@
 package com.banksystem.bankapp.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -25,15 +24,15 @@ public class Account {
 
     @ManyToOne
     @JoinColumn(name = "bank_id")
-    @JsonBackReference
+    @JsonBackReference(value = "bank-accounts")
     private Bank bank;
 
     @OneToMany(mappedBy = "originatingAccount")
-    @JsonManagedReference
+    @JsonManagedReference(value = "originatingAccount-transactions")
     private List<Transaction> outgoingTransactions = new ArrayList<>();
 
     @OneToMany(mappedBy = "resultingAccount")
-    @JsonManagedReference
+    @JsonManagedReference(value = "resultingAccount-transactions")
     private List<Transaction> incomingTransactions = new ArrayList<>();
 
     public Account() {

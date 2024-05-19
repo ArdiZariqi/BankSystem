@@ -8,9 +8,6 @@ public class BankappApplication {
 
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(BankappApplication.class, args);
-
-		ConsoleApp consoleApp = new ConsoleApp();
-		consoleApp.run(args);
 	}
 
 }

@@ -5,7 +5,7 @@ import com.banksystem.bankapp.entities.Account;
 import com.banksystem.bankapp.entities.Bank;
 import com.banksystem.bankapp.entities.Transaction;
 import com.banksystem.bankapp.enums.TransactionFeeType;
-import com.banksystem.bankapp.exception.CostumException;
+import com.banksystem.bankapp.exception.CustomException;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
 import com.banksystem.bankapp.service.interfaces.IBankService;
 import com.banksystem.bankapp.service.interfaces.ITransactionService;
@@ -48,7 +48,7 @@ public class TransactionService implements ITransactionService {
             BigDecimal totalAmount = transaction.getAmount().add(fee);
 
             if (originatingAccount.getBalance().compareTo(totalAmount) < 0) {
-                throw new CostumException("Insufficient funds in the originating account.");
+                throw new CustomException("Insufficient funds in the originating account.");
             }
 
             originatingAccount.withdrawMoney(totalAmount);
@@ -86,7 +86,7 @@ public class TransactionService implements ITransactionService {
         if (result.isPresent()) {
             theTransaction = result.get();
         } else {
-            throw new CostumException("Transaction with ID " + id + " not found");
+            throw new CustomException("Transaction with ID " + id + " not found");
         }
         return theTransaction;
     }

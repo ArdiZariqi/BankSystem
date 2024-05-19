@@ -31,7 +31,7 @@ public class Bank {
     private BigDecimal totalTransferAmount = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "bank", fetch = FetchType.EAGER)
-    @JsonManagedReference
+    @JsonManagedReference(value = "bank-accounts")
     private List<Account> accounts;
 
     // Constructors, Getters, and Setters
@@ -89,7 +89,7 @@ public class Bank {
     }
 
     public void setTotalTransactionFeeAmount(BigDecimal totalTransactionFeeAmount) {
-        this.totalTransactionFeeAmount = totalTransactionFeeAmount.add(totalTransactionFeeAmount);
+        this.totalTransactionFeeAmount = totalTransactionFeeAmount;
     }
 
     public BigDecimal getTotalTransferAmount() {
@@ -97,7 +97,7 @@ public class Bank {
     }
 
     public void setTotalTransferAmount(BigDecimal totalTransferAmount) {
-        this.totalTransferAmount = totalTransferAmount.add(totalTransferAmount);
+        this.totalTransferAmount = totalTransferAmount;
     }
 
     public List<Account> getAccounts() {

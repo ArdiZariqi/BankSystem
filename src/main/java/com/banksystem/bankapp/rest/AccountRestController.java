@@ -2,7 +2,9 @@ package com.banksystem.bankapp.rest;
 
 import com.banksystem.bankapp.entities.Account;
 import com.banksystem.bankapp.service.interfaces.IAccountService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,25 +21,28 @@ public class AccountRestController {
         this.iAccountService = iAccountService;
     }
 
-    @PostMapping
-    public ResponseEntity<Account> createAccount(@RequestBody Account Account) {
-        Account createdAccount = iAccountService.save(Account);
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Account> createAccount(@RequestBody Account account) {
+        Account createdAccount = iAccountService.save(account);
         return ResponseEntity.ok(createdAccount);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Account> getAccountById(@PathVariable Integer id) {
-        Account Account = iAccountService.getById(id);
-        return Account != null ? ResponseEntity.ok(Account) : ResponseEntity.notFound().build();
+        Account account = iAccountService.getById(id);
+        if (account == null) {
+            throw new EntityNotFoundException("Account not found with id " + id);
+        }
+        return ResponseEntity.ok(account);
     }
 
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Account>> getAllAccounts() {
-        List<Account> Accounts = iAccountService.getAll();
-        return ResponseEntity.ok(Accounts);
+        List<Account> accounts = iAccountService.getAll();
+        return ResponseEntity.ok(accounts);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> deleteAccount(@PathVariable Integer id) {
         iAccountService.delete(id);
         return ResponseEntity.noContent().build();
