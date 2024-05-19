@@ -183,10 +183,6 @@ Sample data is inserted through Liquibase changesets for testing purposes.
 - Ensure MySQL is running and the credentials in `application.properties` are correct.
 - Check the Maven build logs for any issues during the build process.
 
-## License
-
-This project is licensed under the MIT License.
-
 ---
 
 By following these instructions, you should be able to set up and run the banking console application successfully. If you encounter any issues, please refer to the troubleshooting section or reach out for support.
@@ -248,6 +244,6 @@ The Bank System Application provides the following functionalities:
 
 ---
 
-By following these instructions, you should be able to set up and run the banking console application successfully. If you encounter any issues, please refer to the troubleshooting section or reach out for support.
+By following these instructions, you should be able to set up and run the banking RESTful Api successfully. If you encounter any issues, please refer to the troubleshooting section or reach out for support.
 
 Enjoy using the Bank System Application! If you encounter any issues or have suggestions, feel free to reach out for support.
